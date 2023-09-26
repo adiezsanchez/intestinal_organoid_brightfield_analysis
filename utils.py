@@ -66,8 +66,14 @@ def find_focus(images_per_well):
                 img = rgb_img
 
             # Apply object segmenter from APOC
-            segmenter = ObjectSegmenter(opencl_filename="./ObjectSegmenter.cl")
-            result = segmenter.predict(image=img)
+            try:
+                segmenter = ObjectSegmenter(opencl_filename="./ObjectSegmenter.cl")
+                result = segmenter.predict(image=img)
+            except IndexError:
+                segmenter = ObjectSegmenter(
+                    opencl_filename="./pretrained_APOC/ObjectSegmenter.cl"
+                )
+                result = segmenter.predict(image=img)
 
             # Closing some holes in the organoid labels
             closed_labels = cle.closing_labels(result, None, radius=4.0)
@@ -93,8 +99,14 @@ def find_focus(images_per_well):
             )
 
             # Apply object classifier from APOC
-            classifier = ObjectClassifier(opencl_filename="./ObjectClassifier.cl")
-            result = classifier.predict(labels=cc_split_organoids, image=img)
+            try:
+                classifier = ObjectClassifier(opencl_filename="./ObjectClassifier.cl")
+                result = classifier.predict(labels=cc_split_organoids, image=img)
+            except AttributeError:
+                classifier = ObjectClassifier(
+                    opencl_filename="./pretrained_APOC/ObjectClassifier.cl"
+                )
+                result = classifier.predict(labels=cc_split_organoids, image=img)
 
             # Convert the resulting .cle image into a np.array to count objects within each class
             image_array = np.array(result, dtype=np.int8)
