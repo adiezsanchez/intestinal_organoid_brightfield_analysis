@@ -145,6 +145,7 @@ def find_highest_infocus(nr_infocus_organoids):
 def store_imgs(
     images_per_well, max_index_dict, output_dir="./output/in_focus_organoids"
 ):
+    """Stores images in focus"""
     # Create a directory to store the tif files if it doesn't exist
     os.makedirs(output_dir, exist_ok=True)
 
