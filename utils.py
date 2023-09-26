@@ -176,7 +176,7 @@ def plot_plate(
     output_path="./output/output_plot.png",
     img_folder_path="./output/in_focus_organoids/",
 ):
-    """Plot the images in a grid like fashion"""
+    """Plot the images in a grid-like fashion"""
 
     # Initialize a dictionary to store images by rows (letters)
     image_dict = {}
@@ -216,9 +216,22 @@ def plot_plate(
     fig_height = num_rows * 2.5  # Adjust the multiplier as needed
 
     # Create a subplot for each image, using None for empty subplots
-    fig, axes = plt.subplots(
-        num_rows, num_cols, figsize=(fig_width, fig_height), sharex=True, sharey=True
-    )
+    if num_rows == 1:
+        fig, axes = plt.subplots(
+            1, num_cols, figsize=(fig_width, fig_height), sharex=True, sharey=True
+        )
+    elif num_cols == 1:
+        fig, axes = plt.subplots(
+            num_rows, 1, figsize=(fig_width, fig_height), sharex=True, sharey=True
+        )
+    else:
+        fig, axes = plt.subplots(
+            num_rows,
+            num_cols,
+            figsize=(fig_width, fig_height),
+            sharex=True,
+            sharey=True,
+        )
 
     for i, (letter, images) in enumerate(sorted_image_dict.items()):
         for j, (number, filenames) in tqdm(enumerate(images.items())):
@@ -226,18 +239,37 @@ def plot_plate(
                 image_filename = filenames[0]  # Use the first filename in the list
                 image_path = os.path.join(img_folder_path, image_filename)
                 image = plt.imread(image_path)
-                axes[i, j].imshow(image)
-                axes[i, j].set_title(f"{letter}{number:02d}")
-                axes[i, j].axis("off")
+
+                if num_rows == 1:
+                    axes[j].imshow(image)
+                    axes[j].set_title(f"{letter}{number:02d}")
+                    axes[j].axis("off")
+                elif num_cols == 1:
+                    axes[i].imshow(image)
+                    axes[i].set_title(f"{letter}{number:02d}")
+                    axes[i].axis("off")
+                else:
+                    axes[i, j].imshow(image)
+                    axes[i, j].set_title(f"{letter}{number:02d}")
+                    axes[i, j].axis("off")
+
             else:
                 # If there are no images for a specific letter-number combination, remove the empty subplot
-                fig.delaxes(axes[i, j])
+                if num_rows == 1:
+                    fig.delaxes(axes[j])
+                elif num_cols == 1:
+                    fig.delaxes(axes[i])
+                else:
+                    fig.delaxes(axes[i, j])
 
     # Adjust the spacing and set aspect ratio to be equal
     plt.subplots_adjust(wspace=0.1, hspace=0.1)
     for ax_row in axes:
-        for ax in ax_row:
-            ax.set_aspect("equal")
+        if isinstance(ax_row, list):
+            for ax in ax_row:
+                ax.set_aspect("equal")
+        else:
+            ax_row.set_aspect("equal")
 
     # Save the plot at a higher resolution
     plt.savefig(output_path, dpi=resolution, bbox_inches="tight")
