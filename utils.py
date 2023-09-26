@@ -277,12 +277,6 @@ def plot_plate(
 
     # Adjust the spacing and set aspect ratio to be equal
     plt.subplots_adjust(wspace=0.1, hspace=0.1)
-    for ax_row in axes:
-        if isinstance(ax_row, list):
-            for ax in ax_row:
-                ax.set_aspect("equal")
-        else:
-            ax_row.set_aspect("equal")
 
     # Save the plot at a higher resolution
     plt.savefig(output_path, dpi=resolution, bbox_inches="tight")
