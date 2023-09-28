@@ -78,11 +78,9 @@ def find_focus(images_per_well):
             # Closing some holes in the organoid labels
             closed_labels = cle.closing_labels(result, None, radius=4.0)
 
-            # Calculate and plot the area of each object to select a threshold to remove small objects
+            # Calculate the area of each object to select a threshold to remove small objects
             # and keep just the organoids
-            props = measure.regionprops(
-                closed_labels
-            )  # Calculate the area of each labeled object
+            props = measure.regionprops(closed_labels)
 
             # Exclude small labels, cutout in pixel area seems to be below 1000px
             exclude_small = cle.exclude_small_labels(closed_labels, None, 1000.0)
