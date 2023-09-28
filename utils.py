@@ -60,10 +60,15 @@ def find_focus(images_per_well):
 
             # Load one RGB image and transform it into grayscale (if needed) for APOC
             rgb_img = tifffile.imread(input_img, is_ome=False)
-            if rgb_img.shape[2] == 3:
+            if len(rgb_img.shape) < 3:
+                img = rgb_img
+            elif rgb_img.shape[2] == 3:
                 img = rgb2gray(rgb_img)
             else:
-                img = rgb_img
+                print(
+                    "Modify the loader to accommodate different file formats",
+                    rgb_img.shape,
+                )
 
             # Apply object segmenter from APOC
             try:
