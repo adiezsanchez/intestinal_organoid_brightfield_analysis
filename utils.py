@@ -182,6 +182,7 @@ def plot_plate(
     resolution,
     output_path="./output/output_plot.png",
     img_folder_path="./output/in_focus_organoids/",
+    colormap="gray",
 ):
     """Plot the images in a grid-like fashion"""
 
@@ -248,15 +249,15 @@ def plot_plate(
                 image = plt.imread(image_path)
 
                 if num_rows == 1:
-                    axes[j].imshow(image)
+                    axes[j].imshow(image, cmap=colormap)
                     axes[j].set_title(f"{letter}{number:02d}")
                     axes[j].axis("off")
                 elif num_cols == 1:
-                    axes[i].imshow(image)
+                    axes[i].imshow(image, cmap=colormap)
                     axes[i].set_title(f"{letter}{number:02d}")
                     axes[i].axis("off")
                 else:
-                    axes[i, j].imshow(image)
+                    axes[i, j].imshow(image, cmap=colormap)
                     axes[i, j].set_title(f"{letter}{number:02d}")
                     axes[i, j].axis("off")
 
