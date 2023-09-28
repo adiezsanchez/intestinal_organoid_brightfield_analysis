@@ -46,7 +46,7 @@ def read_images(directory_path):
 
 
 def find_focus(images_per_well):
-    """Processes all the images and extract the nr of organoids in focus from each image"""
+    """Processes all the images and extract the number of organoids in focus from each image"""
 
     nr_infocus_organoids = {}
 
