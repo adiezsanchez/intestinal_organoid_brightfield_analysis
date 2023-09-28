@@ -251,7 +251,7 @@ def plot_plate(
             if filenames:
                 image_filename = filenames[0]  # Use the first filename in the list
                 image_path = os.path.join(img_folder_path, image_filename)
-                image = plt.imread(image_path)
+                image = tifffile.imread(image_path, is_ome=False)
 
                 if num_rows == 1:
                     axes[j].imshow(image, cmap=colormap)
