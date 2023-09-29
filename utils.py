@@ -185,7 +185,7 @@ def store_imgs(
 
 def plot_plate(
     resolution,
-    output_path="./output/output_plot.png",
+    output_path="./output/output_plot.tif",
     img_folder_path="./output/in_focus_organoids/",
     colormap="gray",
 ):
@@ -279,7 +279,7 @@ def plot_plate(
     plt.subplots_adjust(wspace=0.1, hspace=0.1)
 
     # Save the plot at a higher resolution
-    plt.savefig(output_path, dpi=resolution, bbox_inches="tight")
+    plt.savefig(output_path, format="tif", dpi=resolution, bbox_inches="tight")
 
     # Show the plot (optional)
     plt.show()

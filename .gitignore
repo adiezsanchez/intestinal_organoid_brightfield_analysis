@@ -5,3 +5,5 @@ output/segmented_organoids
 output/output_plot.png
 output/organoid_object_plot.png
 data/Full_plate
+output/output_plot.tif
+output/organoid_object_plot.tif
