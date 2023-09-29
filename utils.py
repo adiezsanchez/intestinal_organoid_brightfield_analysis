@@ -190,7 +190,7 @@ def plot_plate(
     img_folder_path="./output/in_focus_organoids/",
     colormap="gray",
 ):
-    """Plot the images in a grid-like fashion"""
+    """Plot images in a grid-like fashion according to the well_id position in the plate"""
 
     # Initialize a dictionary to store images by rows (letters)
     image_dict = {}
@@ -287,6 +287,8 @@ def plot_plate(
 
 
 def segment_organoids(in_focus_organoids):
+    """Processes individual z-stacks inside a folder and returns a dictionary containing organoid object masks stored as StackViewNDArray arrays"""
+
     segmented_organoids = {}
 
     # Iterate through the files in the directory
@@ -339,6 +341,21 @@ def segment_organoids(in_focus_organoids):
         segmented_organoids[filename] = edge_removed
 
     return segmented_organoids
+
+
+def save_object_mask(segmented_organoids, output_directory):
+    # Iterate through the dictionary and save each array as a .tif file
+    for filename, object_mask in segmented_organoids.items():
+        # Create a filename for the .tif file within the output_directory
+        save_filename = os.path.join(output_directory, f"{filename}.tif")
+
+        # Ensure the output directory exists
+        os.makedirs(os.path.dirname(save_filename), exist_ok=True)
+
+        # Save the cc_split_organoid array as a grayscale .tif file
+        tifffile.imwrite(
+            save_filename, object_mask, photometric="minisblack", dtype=np.int32
+        )
 
 
 def random_cmap():
