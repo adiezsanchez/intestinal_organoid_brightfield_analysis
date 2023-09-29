@@ -10,6 +10,7 @@ from apoc import ObjectSegmenter, ObjectClassifier
 import pyclesperanto_prototype as cle  # version 0.24.1
 import napari_segment_blobs_and_things_with_membranes as nsbatwm  # version 0.3.6
 import matplotlib.pyplot as plt
+from matplotlib.colors import ListedColormap
 
 # Initialize GPU-acceleration if available
 device = cle.select_device("TX")
@@ -283,3 +284,72 @@ def plot_plate(
 
     # Show the plot (optional)
     plt.show()
+
+
+def segment_organoids(in_focus_organoids):
+    segmented_organoids = {}
+
+    # Iterate through the files in the directory
+    for input_img in in_focus_organoids.glob("*.TIF"):
+        # Get the filename without the extension
+        filename = input_img.stem
+
+        # Load one RGB image and transform it into grayscale (if needed) for APOC
+        rgb_img = tifffile.imread(input_img, is_ome=False)
+        if len(rgb_img.shape) < 3:
+            img = rgb_img
+        elif rgb_img.shape[2] == 3:
+            img = rgb2gray(rgb_img)
+        else:
+            print(
+                "Modify the loader to accommodate different file formats",
+                rgb_img.shape,
+            )
+
+        # Apply object segmenter from APOC
+        try:
+            segmenter = ObjectSegmenter(opencl_filename="./ObjectSegmenter.cl")
+            result = segmenter.predict(image=img)
+        except IndexError:
+            segmenter = ObjectSegmenter(
+                opencl_filename="./pretrained_APOC/ObjectSegmenter.cl"
+            )
+            result = segmenter.predict(image=img)
+
+        # Closing some holes in the organoid labels
+        closed_labels = cle.closing_labels(result, None, radius=4.0)
+
+        # Exclude small labels, cutout in pixel area seems to be below 1000px
+        exclude_small = cle.exclude_small_labels(closed_labels, None, 1000.0)
+        exclude_small = np.array(
+            exclude_small, dtype=np.int32
+        )  # Change dtype of closed labels to feed array into nsbatwm.split
+
+        # Splitting organoids into a binary mask
+        split_organoids = nsbatwm.split_touching_objects(exclude_small, sigma=10.0)
+
+        # Connected component (cc) labeling
+        cc_split_organoids = nsbatwm.connected_component_labeling(
+            split_organoids, False
+        )
+
+        # Remove labels on edges
+        edge_removed = nsbatwm.remove_labels_on_edges(cc_split_organoids)
+
+        segmented_organoids[filename] = edge_removed
+
+    return segmented_organoids
+
+
+def random_cmap():
+    np.random.seed(42)
+    cmap = ListedColormap(np.random.rand(256, 4))
+    # value 0 should just be transparent
+    cmap.colors[:, 3] = 0.5
+    cmap.colors[0, :] = 1
+    cmap.colors[0, 3] = 0
+
+    # if image is a mask, color (last value) should be red
+    cmap.colors[-1, 0] = 1
+    cmap.colors[-1, 1:3] = 0
+    return cmap
