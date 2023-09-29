@@ -343,6 +343,73 @@ def segment_organoids(in_focus_organoids):
     return segmented_organoids
 
 
+def segment_in_focus_organoids(in_focus_organoids):
+    """Processes individual z-stacks inside a folder and returns a dictionary containing in-focus/out-of-focus organoid object masks stored as StackViewNDArray arrays"""
+
+    focus_masks = {}
+
+    # Iterate through the files in the directory
+    for input_img in in_focus_organoids.glob("*.TIF"):
+        # Get the filename without the extension
+        filename = input_img.stem
+
+        # Load one RGB image and transform it into grayscale (if needed) for APOC
+        rgb_img = tifffile.imread(input_img, is_ome=False)
+        if len(rgb_img.shape) < 3:
+            img = rgb_img
+        elif rgb_img.shape[2] == 3:
+            img = rgb2gray(rgb_img)
+        else:
+            print(
+                "Modify the loader to accommodate different file formats",
+                rgb_img.shape,
+            )
+
+        # Apply object segmenter from APOC
+        try:
+            segmenter = ObjectSegmenter(opencl_filename="./ObjectSegmenter.cl")
+            result = segmenter.predict(image=img)
+        except IndexError:
+            segmenter = ObjectSegmenter(
+                opencl_filename="./pretrained_APOC/ObjectSegmenter.cl"
+            )
+            result = segmenter.predict(image=img)
+
+        # Closing some holes in the organoid labels
+        closed_labels = cle.closing_labels(result, None, radius=4.0)
+
+        # Exclude small labels, cutout in pixel area seems to be below 1000px
+        exclude_small = cle.exclude_small_labels(closed_labels, None, 1000.0)
+        exclude_small = np.array(
+            exclude_small, dtype=np.int32
+        )  # Change dtype of closed labels to feed array into nsbatwm.split
+
+        # Splitting organoids into a binary mask
+        split_organoids = nsbatwm.split_touching_objects(exclude_small, sigma=10.0)
+
+        # Connected component (cc) labeling
+        cc_split_organoids = nsbatwm.connected_component_labeling(
+            split_organoids, False
+        )
+
+        # Remove labels on edges
+        edge_removed = nsbatwm.remove_labels_on_edges(cc_split_organoids)
+
+        # Apply object classifier from APOC
+        try:
+            classifier = ObjectClassifier(opencl_filename="./ObjectClassifier.cl")
+            result = classifier.predict(labels=edge_removed, image=img)
+        except AttributeError:
+            classifier = ObjectClassifier(
+                opencl_filename="./pretrained_APOC/ObjectClassifier.cl"
+            )
+            result = classifier.predict(labels=cc_split_organoids, image=img)
+
+        focus_masks[filename] = result
+
+    return focus_masks
+
+
 def save_object_mask(segmented_organoids, output_directory):
     # Iterate through the dictionary and save each array as a .tif file
     for filename, object_mask in segmented_organoids.items():
