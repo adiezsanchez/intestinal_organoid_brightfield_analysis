@@ -403,7 +403,7 @@ def segment_in_focus_organoids(in_focus_organoids):
             classifier = ObjectClassifier(
                 opencl_filename="./pretrained_APOC/ObjectClassifier.cl"
             )
-            result = classifier.predict(labels=cc_split_organoids, image=img)
+            result = classifier.predict(labels=edge_removed, image=img)
 
         focus_masks[filename] = result
 
@@ -421,7 +421,10 @@ def save_object_mask(segmented_organoids, output_directory):
 
         # Save the cc_split_organoid array as a grayscale .tif file
         tifffile.imwrite(
-            save_filename, object_mask, photometric="minisblack", dtype=np.int32
+            save_filename,
+            object_mask,
+            photometric="minisblack",
+            dtype=object_mask.dtype,
         )
 
 

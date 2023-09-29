@@ -2,8 +2,10 @@ __pycache__/
 output/Percentage_in_focus_per_well.csv
 output/in_focus_organoids
 output/segmented_organoids
+output/in_out_focus_masks
 output/output_plot.png
 output/organoid_object_plot.png
 data/Full_plate
 output/output_plot.tif
 output/organoid_object_plot.tif
+output/organoid_focus_masks_plot.tif
