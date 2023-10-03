@@ -29,19 +29,26 @@ def read_images(directory_path):
     for file_path in directory_path.glob("*.TIF"):
         # Get the filename without the extension
         filename = file_path.stem
+        # Remove unwanted files (Plate_R files)
+        if "Plate_R" in filename:
+            pass
+        # Remove maximum projections
+        elif "_z" not in filename:
+            pass
 
-        # Extract the last part of the filename (e.g., A06f00d0)
-        last_part = filename.split("_")[-1]
+        else:
+            # Extract the last part of the filename (e.g., A06f00d0)
+            last_part = filename.split("_")[-1]
 
-        # Get the first three letters to create the group name (well_id)
-        well_id = last_part[:3]
+            # Get the first three letters to create the group name (well_id)
+            well_id = last_part[:3]
 
-        # Check if the well_id exists in the dictionary, if not, create a new list
-        if well_id not in images_per_well:
-            images_per_well[well_id] = []
+            # Check if the well_id exists in the dictionary, if not, create a new list
+            if well_id not in images_per_well:
+                images_per_well[well_id] = []
 
-        # Append the file to the corresponding group
-        images_per_well[well_id].append(str(file_path))
+            # Append the file to the corresponding group
+            images_per_well[well_id].append(str(file_path))
 
     return images_per_well
 
