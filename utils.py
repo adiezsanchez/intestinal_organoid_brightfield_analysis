@@ -290,9 +290,10 @@ def segment_organoids(in_focus_organoids):
     """Processes individual z-stacks inside a folder and returns a dictionary containing organoid object masks stored as StackViewNDArray arrays"""
 
     segmented_organoids = {}
+    images = list(in_focus_organoids.glob("*.TIF"))
 
     # Iterate through the files in the directory
-    for input_img in in_focus_organoids.glob("*.TIF"):
+    for input_img in tqdm(images):
         # Get the filename without the extension
         filename = input_img.stem
 
@@ -347,9 +348,10 @@ def segment_in_focus_organoids(in_focus_organoids):
     """Processes individual z-stacks inside a folder and returns a dictionary containing in-focus/out-of-focus organoid object masks stored as StackViewNDArray arrays"""
 
     focus_masks = {}
+    images = list(in_focus_organoids.glob("*.TIF"))
 
     # Iterate through the files in the directory
-    for input_img in in_focus_organoids.glob("*.TIF"):
+    for input_img in tqdm(images):
         # Get the filename without the extension
         filename = input_img.stem
 
