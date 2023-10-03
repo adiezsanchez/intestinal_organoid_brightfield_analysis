@@ -191,12 +191,7 @@ def store_imgs(
             print(f"Key {key} not found in images_per_well dictionary")
 
 
-def plot_plate(
-    resolution,
-    output_path="./output/output_plot.tif",
-    img_folder_path="./output/in_focus_organoids/",
-    colormap="gray",
-):
+def plot_plate(resolution, output_path, img_folder_path, colormap="gray"):
     """Plot images in a grid-like fashion according to the well_id position in the plate"""
 
     # Initialize a dictionary to store images by rows (letters)
