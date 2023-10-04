@@ -1,8 +1,9 @@
 # Library imports
 import os
 from pathlib import Path
-from utils import read_images, find_focus, find_highest_infocus
+from utils import read_images, find_focus, find_highest_infocus, store_imgs
 from tqdm import tqdm
+import pandas as pd
 
 # Define your data directory (folder containing the subfolders storing your plate images)
 parent_folder = Path("./data/Andrew/202309_Org_ApcFlox_Lsd1i_Expt1")
@@ -31,9 +32,6 @@ for folder in tqdm(subfolder_list):
     # Compute the nr of organoids in focus per well
     nr_infocus_organoids = find_focus(images_per_well)
 
-    # Finding the z-stack with the most organoids in-focus
-    max_index_dict = find_highest_infocus(nr_infocus_organoids)
-
     # Store a .csv copy of the max_index_dict containing the percentages of organoids in focus
     # Create a Pandas DataFrame
     df = pd.DataFrame(nr_infocus_organoids)
@@ -51,6 +49,9 @@ for folder in tqdm(subfolder_list):
 
     # Save the DataFrame as a .csv file
     df.to_csv("./output/Percentage_in_focus_per_well.csv", index=False)
+    
+    # Finding the z-stack with the most organoids in-focus
+    max_index_dict = find_highest_infocus(nr_infocus_organoids)
 
     # In case one of the wells has no detectable organoids in focus, this will substitute the focal plane
     # with an average of all focal planes in the plate
@@ -62,3 +63,6 @@ for folder in tqdm(subfolder_list):
     for well, in_focus_stack in max_index_dict.items():
         if in_focus_stack == 0:
             max_index_dict[well] = average_value
+
+    # Storing a copy of each z-stack with the most organoids in focus
+    store_imgs(images_per_well, max_index_dict, output_dir=output_directory)
