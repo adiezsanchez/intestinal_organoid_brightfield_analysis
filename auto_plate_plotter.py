@@ -1,7 +1,7 @@
 # Library imports
 import os
 from pathlib import Path
-from utils import read_images, find_focus, find_highest_infocus, store_imgs
+from utils import read_images, find_focus, find_highest_infocus, store_imgs, plot_plate
 from tqdm import tqdm
 import pandas as pd
 
@@ -48,8 +48,11 @@ for folder in tqdm(subfolder_list):
         print(f"Directory '{output_directory}' already exists.")
 
     # Save the DataFrame as a .csv file
-    df.to_csv("./output/Percentage_in_focus_per_well.csv", index=False)
-    
+    df.to_csv(
+        f"./{str(output_directory)}/Percentage_in_focus_per_well_{str(folder)}.csv",
+        index=False,
+    )
+
     # Finding the z-stack with the most organoids in-focus
     max_index_dict = find_highest_infocus(nr_infocus_organoids)
 
@@ -64,5 +67,29 @@ for folder in tqdm(subfolder_list):
         if in_focus_stack == 0:
             max_index_dict[well] = average_value
 
+    # TODO: Move this directory existence check into the store_imgs function
+    try:
+        os.mkdir(f"{output_directory}/in_focus_organoids")
+        print(
+            f"Directory '{output_directory}/in_focus_organoids' created successfully."
+        )
+    except FileExistsError:
+        print(f"Directory '{output_directory}/in_focus_organoids' already exists.")
+
     # Storing a copy of each z-stack with the most organoids in focus
-    store_imgs(images_per_well, max_index_dict, output_dir=output_directory)
+    store_imgs(
+        images_per_well,
+        max_index_dict,
+        output_dir=f"{output_directory}/in_focus_organoids",
+    )
+
+    # Plot plate grayscale, object detection and in/out-of-focus organoid masks
+
+    # Grayscale
+
+    # TODO: Add a showfig True False argument so the loop does not stop until the matplt figure is closed
+    plot_plate(
+        resolution=RESOLUTION,
+        output_path=f"./{str(output_directory)}/organoid_greyscale_plot.tif",
+        img_folder_path=f"{output_directory}/in_focus_organoids",
+    )
