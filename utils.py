@@ -136,11 +136,14 @@ def find_focus(images_per_well):
             # print(f"Number of Background Objects: {num_background_objects}")
             # print(f"Number of Out-of-Focus Objects: {num_out_of_focus_objects}")
             # print(f"Number of In-Focus Objects: {num_in_focus_objects}")
-
-            in_focus_percentage = (
-                num_in_focus_objects / (num_in_focus_objects + num_out_of_focus_objects)
-            ) * 100
-            # print(f"Percentage of In-Focus Objects: {in_focus_percentage}")
+            try:
+                in_focus_percentage = (
+                    num_in_focus_objects
+                    / (num_in_focus_objects + num_out_of_focus_objects)
+                ) * 100
+                # print(f"Percentage of In-Focus Objects: {in_focus_percentage}")
+            except ZeroDivisionError:
+                in_focus_percentage = 0
 
             nr_infocus_organoids[well_id].append(in_focus_percentage)
 
