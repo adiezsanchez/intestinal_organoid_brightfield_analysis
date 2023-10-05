@@ -187,11 +187,11 @@ def store_imgs(
                 # Copy the file using shutil.copy
                 shutil.copy(file_path, output_path)
 
-                print(f"Saved {key}.tif to {output_path}")
-            else:
-                print(f"Invalid index for key {key}: {index}")
-        else:
-            print(f"Key {key} not found in images_per_well dictionary")
+                # print(f"Saved {key}.tif to {output_path}")
+            # else:
+            # print(f"Invalid index for key {key}: {index}")
+        # else:
+        # print(f"Key {key} not found in images_per_well dictionary")
 
 
 def plot_plate(
