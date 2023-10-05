@@ -95,14 +95,15 @@ def process_folder(folder):
     )
 
 
-# Initialize an empty list to store subfolder names
-subfolder_list = []
+if __name__ == "__main__":
+    # Initialize an empty list to store subfolder names
+    subfolder_list = []
 
-# Iterate over subdirectories in the parent folder
-for subfolder in PARENT_FOLDER.iterdir():
-    if subfolder.is_dir() and "4X" not in str(subfolder):
-        subfolder_list.append(subfolder.name)
+    # Iterate over subdirectories in the parent folder
+    for subfolder in PARENT_FOLDER.iterdir():
+        if subfolder.is_dir() and "4X" not in str(subfolder):
+            subfolder_list.append(subfolder.name)
 
-# Process folders in parallel
-with concurrent.futures.ThreadPoolExecutor() as executor:
-    executor.map(process_folder, subfolder_list)
+    # Process folders in parallel and extract in-focus images
+    with concurrent.futures.ProcessPoolExecutor() as executor:
+        executor.map(process_folder, subfolder_list)
