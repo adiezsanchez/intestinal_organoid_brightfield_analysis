@@ -107,3 +107,17 @@ if __name__ == "__main__":
     # Process folders in parallel and extract in-focus images
     with concurrent.futures.ProcessPoolExecutor() as executor:
         executor.map(process_folder, subfolder_list)
+
+    # Plot grayscale images plate view
+    if "grayscale" in PLATE_VIEWS:
+        for folder in subfolder_list:
+            # Specify the output directory path
+            directory = Path(f"./output/{USERNAME}")
+            output_directory = directory.joinpath(folder)
+            # Generate matplotlib plate view and store it
+            plot_plate(
+                resolution=RESOLUTION,
+                output_path=f"./{str(output_directory)}/organoid_greyscale_plot.tif",
+                img_folder_path=f"{output_directory}/in_focus_organoids",
+                show_fig=False,
+            )
