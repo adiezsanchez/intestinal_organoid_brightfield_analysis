@@ -255,7 +255,7 @@ def plot_plate(
         )
 
     for i, (letter, images) in enumerate(sorted_image_dict.items()):
-        for j, (number, filenames) in tqdm(enumerate(images.items())):
+        for j, (number, filenames) in enumerate(images.items()):
             if filenames:
                 image_filename = filenames[0]  # Use the first filename in the list
                 image_path = os.path.join(img_folder_path, image_filename)
