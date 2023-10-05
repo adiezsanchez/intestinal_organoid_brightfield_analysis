@@ -1,7 +1,16 @@
 # Library imports
 import os
 from pathlib import Path
-from utils import read_images, find_focus, find_highest_infocus, store_imgs, plot_plate
+from utils import (
+    read_images,
+    find_focus,
+    find_highest_infocus,
+    store_imgs,
+    plot_plate,
+    segment_organoids,
+    random_cmap,
+    save_object_mask,
+)
 from tqdm import tqdm
 import pandas as pd
 
@@ -96,7 +105,28 @@ for folder in tqdm(subfolder_list):
         )
 
     if "organoid_object" in PLATE_VIEWS:
-        pass
+        # Define the directory path where your in-focus organoid z-stack have been stored
+        in_focus_organoids = Path(f"{output_directory}/in_focus_organoids")
+
+        # segment_organoids() returns a dictionary where the organoid labels are stored under each well_id key
+        segmented_organoids = segment_organoids(in_focus_organoids)
+
+        # Define the directory path where you want to save the segmented organoid masks
+        output_directory_orgm = f"{output_directory}/segmented_organoids/"
+
+        # Save the segmented organoid masks contained in segmented_organoids in the above defined output directory
+        save_object_mask(segmented_organoids, output_directory_orgm)
+
+        # Plot organoid object plateview
+        cmap = random_cmap()
+
+        plot_plate(
+            resolution=RESOLUTION,
+            output_path=f"./{str(output_directory)}/organoid_object_plot.tif",
+            img_folder_path=f"{output_directory}/segmented_organoids/",
+            show_fig=False,
+            colormap=cmap,
+        )
 
     if "in_focus" in PLATE_VIEWS:
         pass
