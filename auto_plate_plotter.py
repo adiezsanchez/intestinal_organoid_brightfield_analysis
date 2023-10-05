@@ -67,15 +67,6 @@ for folder in tqdm(subfolder_list):
         if in_focus_stack == 0:
             max_index_dict[well] = average_value
 
-    # TODO: Move this directory existence check into the store_imgs function
-    try:
-        os.mkdir(f"{output_directory}/in_focus_organoids")
-        print(
-            f"Directory '{output_directory}/in_focus_organoids' created successfully."
-        )
-    except FileExistsError:
-        print(f"Directory '{output_directory}/in_focus_organoids' already exists.")
-
     # Storing a copy of each z-stack with the most organoids in focus
     store_imgs(
         images_per_well,
@@ -87,9 +78,9 @@ for folder in tqdm(subfolder_list):
 
     # Grayscale
 
-    # TODO: Add a showfig True False argument so the loop does not stop until the matplt figure is closed
     plot_plate(
         resolution=RESOLUTION,
         output_path=f"./{str(output_directory)}/organoid_greyscale_plot.tif",
         img_folder_path=f"{output_directory}/in_focus_organoids",
+        show_fig=False,
     )
