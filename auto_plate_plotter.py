@@ -10,9 +10,11 @@ from utils import (
     segment_organoids,
     random_cmap,
     save_object_mask,
+    segment_in_focus_organoids,
 )
 from tqdm import tqdm
 import pandas as pd
+from matplotlib.colors import ListedColormap
 
 # ---------------- USER INPUT NEEDED BELOW ---------------- #
 
@@ -129,4 +131,35 @@ for folder in tqdm(subfolder_list):
         )
 
     if "in_focus" in PLATE_VIEWS:
+        # Define the directory path where your in-focus organoid z-stack have been stored
+        in_focus_organoids = Path(f"{output_directory}/in_focus_organoids")
+
+        # segment_in_focus_organoids() returns a dictionary where the organoid labels are stored under each well_id key
+        segmented_in_focus_organoids = segment_in_focus_organoids(in_focus_organoids)
+
+        # Define the directory path where you want to save the segmented organoid masks
+        output_focus_directory = f"{output_directory}/in_out_focus_masks/"
+
+        # Save the in-focus segmented organoid masks contained in segmented_in_focus_organoids in the above defined output directory
+        save_object_mask(segmented_in_focus_organoids, output_focus_directory)
+
+        # Define the colors for each value
+        colors = [
+            (0, 0, 0, 0),  # Transparent for 0
+            (0.647, 0.165, 0.165, 1),  # Brown for 1 (out of focus)
+            (0.678, 0.847, 0.902, 1),
+        ]  # Light blue for 2 (in focus)
+
+        # Create a colormap using ListedColormap
+        custom_cmap = ListedColormap(colors)
+
+        plot_plate(
+            resolution=RESOLUTION,
+            output_path=f"./{str(output_directory)}/organoid_focus_masks_plot.tif",
+            img_folder_path=f"{output_directory}/in_out_focus_masks/",
+            show_fig=False,
+            colormap=custom_cmap,
+        )
+
+    if NAPARI_VIS:
         pass
