@@ -5,24 +5,34 @@ from utils import read_images, find_focus, find_highest_infocus, store_imgs, plo
 from tqdm import tqdm
 import pandas as pd
 
+# ---------------- USER INPUT NEEDED BELOW ---------------- #
+
 # Define your data directory (folder containing the subfolders storing your plate images)
-parent_folder = Path("./data/Andrew/202309_Org_ApcFlox_Lsd1i_Expt1")
+PARENT_FOLDER = Path("./data/Andrew/202309_Org_ApcFlox_Lsd1i_Expt1")
 
 # Define the output resolution of your plate plots and username
 RESOLUTION = 300
 USERNAME = "Andrew"
 
+# Choose which plate views do you need (i.e. grayscale, organoid_object, in_focus)
+PLATE_VIEWS = ["grayscale", "organoid_object", "in_focus"]
+
+# Set Napari visualization as True if you need it
+NAPARI_VIS = True
+
+# ---------------- USER INPUT NEEDED ABOVE ---------------- #
+
 # Initialize an empty list to store subfolder names
 subfolder_list = []
 
 # Iterate over subdirectories in the parent folder
-for subfolder in parent_folder.iterdir():
+for subfolder in PARENT_FOLDER.iterdir():
     if subfolder.is_dir() and "4X" not in str(subfolder):
         subfolder_list.append(subfolder.name)
 
 # Iterate over each of the folders containing the images and plot the plates
 for folder in tqdm(subfolder_list):
-    directory_path = parent_folder.joinpath(folder)
+    directory_path = PARENT_FOLDER.joinpath(folder)
     print(directory_path)
 
     # The following function will read all the images contained within the directory_path above
@@ -77,10 +87,16 @@ for folder in tqdm(subfolder_list):
     # Plot plate grayscale, object detection and in/out-of-focus organoid masks
 
     # Grayscale
+    if "grayscale" in PLATE_VIEWS:
+        plot_plate(
+            resolution=RESOLUTION,
+            output_path=f"./{str(output_directory)}/organoid_greyscale_plot.tif",
+            img_folder_path=f"{output_directory}/in_focus_organoids",
+            show_fig=False,
+        )
 
-    plot_plate(
-        resolution=RESOLUTION,
-        output_path=f"./{str(output_directory)}/organoid_greyscale_plot.tif",
-        img_folder_path=f"{output_directory}/in_focus_organoids",
-        show_fig=False,
-    )
+    if "organoid_object" in PLATE_VIEWS:
+        pass
+
+    if "in_focus" in PLATE_VIEWS:
+        pass
