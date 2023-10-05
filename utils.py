@@ -191,7 +191,9 @@ def store_imgs(
             print(f"Key {key} not found in images_per_well dictionary")
 
 
-def plot_plate(resolution, output_path, img_folder_path, colormap="gray"):
+def plot_plate(
+    resolution, output_path, img_folder_path, show_fig=True, colormap="gray"
+):
     """Plot images in a grid-like fashion according to the well_id position in the plate"""
 
     # Initialize a dictionary to store images by rows (letters)
@@ -284,8 +286,10 @@ def plot_plate(resolution, output_path, img_folder_path, colormap="gray"):
     # Save the plot at a higher resolution
     plt.savefig(output_path, format="tif", dpi=resolution, bbox_inches="tight")
 
-    # Show the plot (optional)
-    plt.show()
+    # If False plt.show() is not run to avoid loop stop upon display
+    if show_fig:
+        # Show the plot (optional)
+        plt.show()
 
 
 def segment_organoids(in_focus_organoids):
