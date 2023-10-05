@@ -28,9 +28,6 @@ USERNAME = "Andrew"
 # Choose which plate views do you need (i.e. grayscale, organoid_object, in_focus)
 PLATE_VIEWS = ["grayscale", "organoid_object", "in_focus"]
 
-# Set Napari visualization as True if you need it
-NAPARI_VIS = True
-
 # ---------------- USER INPUT NEEDED ABOVE ---------------- #
 
 # Initialize an empty list to store subfolder names
@@ -160,6 +157,3 @@ for folder in tqdm(subfolder_list):
             show_fig=False,
             colormap=custom_cmap,
         )
-
-    if NAPARI_VIS:
-        pass
