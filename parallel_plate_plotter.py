@@ -3,10 +3,7 @@ import os
 import concurrent.futures
 from pathlib import Path
 from utils import (
-    read_images,
-    find_focus,
-    find_highest_infocus,
-    store_imgs,
+    process_folder,
     plot_plate,
     save_organoid_segmentation,
     save_focus_segmentation,
@@ -43,59 +40,9 @@ PLATE_VIEWS = ["grayscale", "organoid_object", "in_focus"]
 # ---------------- PARALLEL PROCESSING FUNCTIONS ---------------------- #
 
 
-def process_folder(folder):
-    """Reads a folder, scans all z-stacks per well and stores a copy of the in-focus stack"""
-    directory_path = PARENT_FOLDER.joinpath(folder)
-    print(directory_path)
-
-    # The following function will read all the images contained within the directory_path above
-    # and store them grouped by well_id.
-    images_per_well = read_images(directory_path)
-
-    # Compute the nr of organoids in focus per well
-    nr_infocus_organoids = find_focus(images_per_well)
-
-    # Store a .csv copy of the max_index_dict containing the percentages of organoids in focus
-    # Create a Pandas DataFrame
-    df = pd.DataFrame(nr_infocus_organoids)
-
-    # Specify the output directory path
-    directory = Path(f"./output/{USERNAME}")
-    output_directory = directory.joinpath(folder)
-
-    # Check if the output directory already exists and create it if it does not
-    try:
-        os.makedirs(output_directory)
-        print(f"Directory '{output_directory}' created successfully.")
-    except FileExistsError:
-        print(f"Directory '{output_directory}' already exists.")
-
-    # Save the DataFrame as a .csv file
-    df.to_csv(
-        f"./{str(output_directory)}/Percentage_in_focus_per_well_{str(folder)}.csv",
-        index=False,
-    )
-
-    # Finding the z-stack with the most organoids in-focus
-    max_index_dict = find_highest_infocus(nr_infocus_organoids)
-
-    # In case one of the wells has no detectable organoids in focus, this will substitute the focal plane
-    # with an average of all focal planes in the plate
-
-    # Calculate the average of all values in the dictionary
-    average_value = round(sum(max_index_dict.values()) / len(max_index_dict))
-
-    # Substitute the 0 values for the average focal plane
-    for well, in_focus_stack in max_index_dict.items():
-        if in_focus_stack == 0:
-            max_index_dict[well] = average_value
-
-    # Storing a copy of each z-stack with the most organoids in focus
-    store_imgs(
-        images_per_well,
-        max_index_dict,
-        output_dir=f"{output_directory}/in_focus_organoids",
-    )
+def process_folder_wrapper(folder):
+    """Wrapper function to pass additional arguments to process_folder"""
+    process_folder(folder, PARENT_FOLDER, USERNAME)
 
 
 # ---------------- SCRIPT ---------------------- #
@@ -110,6 +57,7 @@ if __name__ == "__main__":
             subfolder_list.append(subfolder.name)
 
     # Process folders in parallel and extract in-focus images
+    print("Extracting in-focus z-stacks")
     with concurrent.futures.ProcessPoolExecutor() as executor:
         executor.map(process_folder, subfolder_list)
 
@@ -136,7 +84,9 @@ if __name__ == "__main__":
 
     # Plot grayscale images plate view
     if "grayscale" in PLATE_VIEWS:
-        for folder in subfolder_list:
+        print("Generating and storing grayscale images plate views")
+
+        for folder in tqdm(subfolder_list):
             # Generate matplotlib plate view and store it
             plot_plate(
                 resolution=RESOLUTION,
@@ -200,5 +150,3 @@ if __name__ == "__main__":
                 colormap=custom_cmap,
                 show_fig=False,
             )
-
-# TODO: Move process_folder to utils.py (in-progress)
