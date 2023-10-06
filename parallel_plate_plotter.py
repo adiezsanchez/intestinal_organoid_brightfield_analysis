@@ -43,6 +43,7 @@ PLATE_VIEWS = ["grayscale", "organoid_object", "in_focus"]
 
 # Function to process a single folder for multithreading
 def process_folder(folder):
+    """Reads a folder, scans all z-stacks per well and stores a copy of the in-focus stack"""
     directory_path = PARENT_FOLDER.joinpath(folder)
     print(directory_path)
 
