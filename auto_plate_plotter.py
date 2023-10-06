@@ -16,6 +16,14 @@ from tqdm import tqdm
 import pandas as pd
 from matplotlib.colors import ListedColormap
 
+import warnings
+# Filter out the specific warning when organoids are not detected (empty well)
+warnings.filterwarnings(
+    "ignore",
+    category=RuntimeWarning,
+    message="invalid value encountered in long_scalars",
+)
+
 # ---------------- USER INPUT NEEDED BELOW ---------------- #
 
 # Define your data directory (folder containing the subfolders storing your plate images)
