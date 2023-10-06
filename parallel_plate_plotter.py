@@ -110,6 +110,20 @@ def save_organoid_segmentation(in_focus_organoids):
     save_object_mask(segmented_organoids, output_directory)
 
 
+def save_focus_segmentation(in_focus_organoids):
+    """Reads a folder containing grayscale images, segments the organoids and saves the resulting masks in a new folder"""
+    # segment_in_focus_organoids() returns a dictionary where the organoid labels are stored under each well_id key
+    focus_classified_organoids = segment_in_focus_organoids(Path(in_focus_organoids))
+
+    # Define the directory path where you want to save the segmented organoid masks
+    # Split the in_focus_organoids path to obtain the folder that is one level up (head)
+    head, tail = os.path.split(in_focus_organoids)
+    output_directory = os.path.join(head, "in_out_focus_masks")
+
+    # Save the segmented organoid masks contained in segmented_organoids in the above defined output directory
+    save_object_mask(focus_classified_organoids, output_directory)
+
+
 if __name__ == "__main__":
     # Initialize an empty list to store subfolder names
     subfolder_list = []
@@ -218,3 +232,4 @@ if __name__ == "__main__":
             )
 
 # TODO: Move directory generation loops out of the "PLATE_VIEWS" conditions
+# TODO: Move functions to utils.py
