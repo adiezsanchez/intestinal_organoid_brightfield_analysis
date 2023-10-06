@@ -69,18 +69,18 @@ if __name__ == "__main__":
             output_directory = directory.joinpath(folder)
 
         if "organoid_object" or "in_focus" in PLATE_VIEWS:
+            # Create empty lists to hold all the directories
             in_focus_org_dirs = []
             org_masks_dirs = []
             focus_masks_dirs = []
 
-            for folder in subfolder_list:
-                # Specify the in_focus_organoids directory path within output
-                in_focus_org_directory = f"{output_directory}/in_focus_organoids"
-                organoid_mask_directory = f"{output_directory}/segmented_organoids"
-                focus_mask_directory = f"{output_directory}/in_out_focus_masks"
-                in_focus_org_dirs.append(in_focus_org_directory)
-                org_masks_dirs.append(organoid_mask_directory)
-                focus_masks_dirs.append(focus_mask_directory)
+            # Create all necessary subfolders within the output_directory
+            in_focus_org_directory = f"{output_directory}/in_focus_organoids"
+            organoid_mask_directory = f"{output_directory}/segmented_organoids"
+            focus_mask_directory = f"{output_directory}/in_out_focus_masks"
+            in_focus_org_dirs.append(in_focus_org_directory)
+            org_masks_dirs.append(organoid_mask_directory)
+            focus_masks_dirs.append(focus_mask_directory)
 
     # Plot grayscale images plate view
     if "grayscale" in PLATE_VIEWS:
