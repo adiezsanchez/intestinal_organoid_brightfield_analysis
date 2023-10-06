@@ -451,3 +451,34 @@ def random_cmap():
     cmap.colors[-1, 0] = 1
     cmap.colors[-1, 1:3] = 0
     return cmap
+
+
+# --------------- PARALLELIZATION FUNCTIONS ---------------- #
+
+
+def save_organoid_segmentation(in_focus_organoids):
+    """Reads a folder containing grayscale images, segments the organoids and saves the resulting masks in a new folder"""
+    # segment_organoids() returns a dictionary where the organoid labels are stored under each well_id key
+    segmented_organoids = segment_organoids(Path(in_focus_organoids))
+
+    # Define the directory path where you want to save the segmented organoid masks
+    # Split the in_focus_organoids path to obtain the folder that is one level up (head)
+    head, tail = os.path.split(in_focus_organoids)
+    output_directory = os.path.join(head, "segmented_organoids")
+
+    # Save the segmented organoid masks contained in segmented_organoids in the above defined output directory
+    save_object_mask(segmented_organoids, output_directory)
+
+
+def save_focus_segmentation(in_focus_organoids):
+    """Reads a folder containing grayscale images, segments the organoids and saves the resulting masks in a new folder"""
+    # segment_in_focus_organoids() returns a dictionary where the organoid labels are stored under each well_id key
+    focus_classified_organoids = segment_in_focus_organoids(Path(in_focus_organoids))
+
+    # Define the directory path where you want to save the segmented organoid masks
+    # Split the in_focus_organoids path to obtain the folder that is one level up (head)
+    head, tail = os.path.split(in_focus_organoids)
+    output_directory = os.path.join(head, "in_out_focus_masks")
+
+    # Save the segmented organoid masks contained in segmented_organoids in the above defined output directory
+    save_object_mask(focus_classified_organoids, output_directory)
