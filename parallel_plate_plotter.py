@@ -13,6 +13,7 @@ from utils import (
     save_object_mask,
     segment_in_focus_organoids,
 )
+from tqdm import tqdm
 import pandas as pd
 from matplotlib.colors import ListedColormap
 
@@ -136,7 +137,7 @@ if __name__ == "__main__":
                 show_fig=False,
             )
 
-    # Generate and save organoid images
+    # Generate and save organoid segmentation images, then plot plate view
     if "organoid_object" in PLATE_VIEWS:
         in_focus_org_dirs = []
         org_masks_dirs = []
@@ -171,3 +172,49 @@ if __name__ == "__main__":
                 colormap=cmap,
                 show_fig=False,
             )
+
+    # Generate and save in/out-of-focus organoid segmentation images, then plot plate view
+    if "in_focus" in PLATE_VIEWS:
+        in_focus_org_dirs = []
+        focus_masks_dirs = []
+
+        for folder in subfolder_list:
+            # Specify the in_focus_organoids directory path within output
+            directory = Path(f"./output/{USERNAME}")
+            output_directory = directory.joinpath(folder)
+            in_focus_org_directory = f"{output_directory}/in_focus_organoids"
+            focus_mask_directory = f"{output_directory}/in_out_focus_masks"
+            in_focus_org_dirs.append(in_focus_org_directory)
+            focus_masks_dirs.append(focus_mask_directory)
+
+        # Process folders in parallel, extract organoid segmentation masks and store them as .tif files
+        with concurrent.futures.ProcessPoolExecutor() as executor:
+            executor.map(save_focus_segmentation, in_focus_org_dirs)
+
+        # Plot focus classification using a for loop ()
+        # Define the colors for each value
+        colors = [
+            (0, 0, 0, 0),  # Transparent for 0
+            (0.647, 0.165, 0.165, 1),  # Brown for 1 (out of focus)
+            (0.678, 0.847, 0.902, 1),
+        ]  # Light blue for 2 (in focus)
+
+        # Create a colormap using ListedColormap
+        custom_cmap = ListedColormap(colors)
+
+        print("Generating and storing focus classification plate views")
+
+        for focus_mask_dir in tqdm(focus_masks_dirs):
+            # Generate the filepath for each organoid mask plate view
+            head, tail = os.path.split(focus_mask_dir)
+            output_path = os.path.join(head, "focus_classification_plot.tif")
+
+            plot_plate(
+                resolution=RESOLUTION,
+                output_path=output_path,
+                img_folder_path=focus_mask_dir,
+                colormap=custom_cmap,
+                show_fig=False,
+            )
+
+# TODO: Move directory generation loops out of the "PLATE_VIEWS" conditions
