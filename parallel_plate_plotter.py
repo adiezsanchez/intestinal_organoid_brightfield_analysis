@@ -8,10 +8,9 @@ from utils import (
     find_highest_infocus,
     store_imgs,
     plot_plate,
-    segment_organoids,
+    save_organoid_segmentation,
+    save_focus_segmentation,
     random_cmap,
-    save_object_mask,
-    segment_in_focus_organoids,
 )
 from tqdm import tqdm
 import pandas as pd
@@ -26,6 +25,7 @@ warnings.filterwarnings(
     message="invalid value encountered in long_scalars",
 )
 
+
 # ---------------- USER INPUT NEEDED BELOW ---------------- #
 
 # Define your data directory (folder containing the subfolders storing your plate images)
@@ -38,10 +38,11 @@ USERNAME = "Andrew"
 # Choose which plate views do you need (i.e. grayscale, organoid_object, in_focus)
 PLATE_VIEWS = ["grayscale", "organoid_object", "in_focus"]
 
-# ---------------- USER INPUT NEEDED ABOVE ---------------- #
+# ---------------- USER INPUT NEEDED ABOVE ---------------------------- #
+
+# ---------------- PARALLEL PROCESSING FUNCTIONS ---------------------- #
 
 
-# Function to process a single folder for multithreading
 def process_folder(folder):
     """Reads a folder, scans all z-stacks per well and stores a copy of the in-focus stack"""
     directory_path = PARENT_FOLDER.joinpath(folder)
@@ -97,33 +98,7 @@ def process_folder(folder):
     )
 
 
-def save_organoid_segmentation(in_focus_organoids):
-    """Reads a folder containing grayscale images, segments the organoids and saves the resulting masks in a new folder"""
-    # segment_organoids() returns a dictionary where the organoid labels are stored under each well_id key
-    segmented_organoids = segment_organoids(Path(in_focus_organoids))
-
-    # Define the directory path where you want to save the segmented organoid masks
-    # Split the in_focus_organoids path to obtain the folder that is one level up (head)
-    head, tail = os.path.split(in_focus_organoids)
-    output_directory = os.path.join(head, "segmented_organoids")
-
-    # Save the segmented organoid masks contained in segmented_organoids in the above defined output directory
-    save_object_mask(segmented_organoids, output_directory)
-
-
-def save_focus_segmentation(in_focus_organoids):
-    """Reads a folder containing grayscale images, segments the organoids and saves the resulting masks in a new folder"""
-    # segment_in_focus_organoids() returns a dictionary where the organoid labels are stored under each well_id key
-    focus_classified_organoids = segment_in_focus_organoids(Path(in_focus_organoids))
-
-    # Define the directory path where you want to save the segmented organoid masks
-    # Split the in_focus_organoids path to obtain the folder that is one level up (head)
-    head, tail = os.path.split(in_focus_organoids)
-    output_directory = os.path.join(head, "in_out_focus_masks")
-
-    # Save the segmented organoid masks contained in segmented_organoids in the above defined output directory
-    save_object_mask(focus_classified_organoids, output_directory)
-
+# ---------------- SCRIPT ---------------------- #
 
 if __name__ == "__main__":
     # Initialize an empty list to store subfolder names
@@ -138,12 +113,30 @@ if __name__ == "__main__":
     with concurrent.futures.ProcessPoolExecutor() as executor:
         executor.map(process_folder, subfolder_list)
 
-    # Plot grayscale images plate view
-    if "grayscale" in PLATE_VIEWS:
+    # Generate directory lists
+    if len(PLATE_VIEWS) >= 1:
         for folder in subfolder_list:
             # Specify the output directory path
             directory = Path(f"./output/{USERNAME}")
             output_directory = directory.joinpath(folder)
+
+        if "organoid_object" or "in_focus" in PLATE_VIEWS:
+            in_focus_org_dirs = []
+            org_masks_dirs = []
+            focus_masks_dirs = []
+
+            for folder in subfolder_list:
+                # Specify the in_focus_organoids directory path within output
+                in_focus_org_directory = f"{output_directory}/in_focus_organoids"
+                organoid_mask_directory = f"{output_directory}/segmented_organoids"
+                focus_mask_directory = f"{output_directory}/in_out_focus_masks"
+                in_focus_org_dirs.append(in_focus_org_directory)
+                org_masks_dirs.append(organoid_mask_directory)
+                focus_masks_dirs.append(focus_mask_directory)
+
+    # Plot grayscale images plate view
+    if "grayscale" in PLATE_VIEWS:
+        for folder in subfolder_list:
             # Generate matplotlib plate view and store it
             plot_plate(
                 resolution=RESOLUTION,
@@ -154,18 +147,6 @@ if __name__ == "__main__":
 
     # Generate and save organoid segmentation images, then plot plate view
     if "organoid_object" in PLATE_VIEWS:
-        in_focus_org_dirs = []
-        org_masks_dirs = []
-
-        for folder in subfolder_list:
-            # Specify the in_focus_organoids directory path within output
-            directory = Path(f"./output/{USERNAME}")
-            output_directory = directory.joinpath(folder)
-            in_focus_org_directory = f"{output_directory}/in_focus_organoids"
-            organoid_mask_directory = f"{output_directory}/segmented_organoids"
-            in_focus_org_dirs.append(in_focus_org_directory)
-            org_masks_dirs.append(organoid_mask_directory)
-
         # Process folders in parallel, extract organoid segmentation masks and store them as .tif files
         with concurrent.futures.ProcessPoolExecutor() as executor:
             executor.map(save_organoid_segmentation, in_focus_org_dirs)
@@ -190,18 +171,6 @@ if __name__ == "__main__":
 
     # Generate and save in/out-of-focus organoid segmentation images, then plot plate view
     if "in_focus" in PLATE_VIEWS:
-        in_focus_org_dirs = []
-        focus_masks_dirs = []
-
-        for folder in subfolder_list:
-            # Specify the in_focus_organoids directory path within output
-            directory = Path(f"./output/{USERNAME}")
-            output_directory = directory.joinpath(folder)
-            in_focus_org_directory = f"{output_directory}/in_focus_organoids"
-            focus_mask_directory = f"{output_directory}/in_out_focus_masks"
-            in_focus_org_dirs.append(in_focus_org_directory)
-            focus_masks_dirs.append(focus_mask_directory)
-
         # Process folders in parallel, extract organoid segmentation masks and store them as .tif files
         with concurrent.futures.ProcessPoolExecutor() as executor:
             executor.map(save_focus_segmentation, in_focus_org_dirs)
@@ -232,5 +201,4 @@ if __name__ == "__main__":
                 show_fig=False,
             )
 
-# TODO: Move directory generation loops out of the "PLATE_VIEWS" conditions
-# TODO: Move functions to utils.py
+# TODO: Move process_folder to utils.py (in-progress)
