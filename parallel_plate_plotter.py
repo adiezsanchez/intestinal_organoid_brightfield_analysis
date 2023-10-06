@@ -139,14 +139,35 @@ if __name__ == "__main__":
     # Generate and save organoid images
     if "organoid_object" in PLATE_VIEWS:
         in_focus_org_dirs = []
+        org_masks_dirs = []
 
         for folder in subfolder_list:
             # Specify the in_focus_organoids directory path within output
             directory = Path(f"./output/{USERNAME}")
             output_directory = directory.joinpath(folder)
             in_focus_org_directory = f"{output_directory}/in_focus_organoids"
+            organoid_mask_directory = f"{output_directory}/segmented_organoids"
             in_focus_org_dirs.append(in_focus_org_directory)
+            org_masks_dirs.append(organoid_mask_directory)
 
         # Process folders in parallel, extract organoid segmentation masks and store them as .tif files
         with concurrent.futures.ProcessPoolExecutor() as executor:
             executor.map(save_organoid_segmentation, in_focus_org_dirs)
+
+        # Plot organoid segmentation plate views using a for loop ()
+        cmap = random_cmap()
+
+        print("Generating and storing organoid mask plate views")
+
+        for org_mask_dir in tqdm(org_masks_dirs):
+            # Generate the filepath for each organoid mask plate view
+            head, tail = os.path.split(org_mask_dir)
+            output_path = os.path.join(head, "organoid_object_plot.tif")
+            # Generate and save the plot
+            plot_plate(
+                resolution=RESOLUTION,
+                output_path=output_path,
+                img_folder_path=org_mask_dir,
+                colormap=cmap,
+                show_fig=False,
+            )
