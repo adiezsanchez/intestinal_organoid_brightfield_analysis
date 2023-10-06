@@ -59,7 +59,7 @@ if __name__ == "__main__":
     # Process folders in parallel and extract in-focus images
     print("Extracting in-focus z-stacks")
     with concurrent.futures.ProcessPoolExecutor() as executor:
-        executor.map(process_folder, subfolder_list)
+        executor.map(process_folder_wrapper, subfolder_list)
 
     # Generate directory lists
     if len(PLATE_VIEWS) >= 1:
