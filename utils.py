@@ -1,16 +1,17 @@
 import os
 import shutil
-from pathlib import Path
-from tqdm import tqdm
+import pandas as pd
 import numpy as np
 import tifffile
-from skimage import measure
-from skimage.color import rgb2gray
-from apoc import ObjectSegmenter, ObjectClassifier
 import pyclesperanto_prototype as cle  # version 0.24.1
 import napari_segment_blobs_and_things_with_membranes as nsbatwm  # version 0.3.6
 import matplotlib.pyplot as plt
 from matplotlib.colors import ListedColormap
+from pathlib import Path
+from tqdm import tqdm
+from skimage import measure
+from skimage.color import rgb2gray
+from apoc import ObjectSegmenter, ObjectClassifier
 
 # Initialize GPU-acceleration if available
 device = cle.select_device("TX")
@@ -451,3 +452,89 @@ def random_cmap():
     cmap.colors[-1, 0] = 1
     cmap.colors[-1, 1:3] = 0
     return cmap
+
+
+# --------------- PARALLELIZATION FUNCTIONS ---------------- #
+
+
+def process_folder(folder, parent_folder, username):
+    """Reads a folder, scans all z-stacks per well and stores a copy of the in-focus stack"""
+    directory_path = parent_folder.joinpath(folder)
+    print(directory_path)
+
+    # The following function will read all the images contained within the directory_path above
+    # and store them grouped by well_id.
+    images_per_well = read_images(directory_path)
+
+    # Compute the nr of organoids in focus per well
+    nr_infocus_organoids = find_focus(images_per_well)
+
+    # Store a .csv copy of the max_index_dict containing the percentages of organoids in focus
+    # Create a Pandas DataFrame
+    df = pd.DataFrame(nr_infocus_organoids)
+
+    # Specify the output directory path
+    directory = Path(f"./output/{username}")
+    output_directory = directory.joinpath(folder)
+
+    # Check if the output directory already exists and create it if it does not
+    try:
+        os.makedirs(output_directory)
+        print(f"Directory '{output_directory}' created successfully.")
+    except FileExistsError:
+        print(f"Directory '{output_directory}' already exists.")
+
+    # Save the DataFrame as a .csv file
+    df.to_csv(
+        f"./{str(output_directory)}/Percentage_in_focus_per_well_{str(folder)}.csv",
+        index=False,
+    )
+
+    # Finding the z-stack with the most organoids in-focus
+    max_index_dict = find_highest_infocus(nr_infocus_organoids)
+
+    # In case one of the wells has no detectable organoids in focus, this will substitute the focal plane
+    # with an average of all focal planes in the plate
+
+    # Calculate the average of all values in the dictionary
+    average_value = round(sum(max_index_dict.values()) / len(max_index_dict))
+
+    # Substitute the 0 values for the average focal plane
+    for well, in_focus_stack in max_index_dict.items():
+        if in_focus_stack == 0:
+            max_index_dict[well] = average_value
+
+    # Storing a copy of each z-stack with the most organoids in focus
+    store_imgs(
+        images_per_well,
+        max_index_dict,
+        output_dir=f"{output_directory}/in_focus_organoids",
+    )
+
+
+def save_organoid_segmentation(in_focus_organoids):
+    """Reads a folder containing grayscale images, segments the organoids and saves the resulting masks in a new folder"""
+    # segment_organoids() returns a dictionary where the organoid labels are stored under each well_id key
+    segmented_organoids = segment_organoids(Path(in_focus_organoids))
+
+    # Define the directory path where you want to save the segmented organoid masks
+    # Split the in_focus_organoids path to obtain the folder that is one level up (head)
+    head, tail = os.path.split(in_focus_organoids)
+    output_directory = os.path.join(head, "segmented_organoids")
+
+    # Save the segmented organoid masks contained in segmented_organoids in the above defined output directory
+    save_object_mask(segmented_organoids, output_directory)
+
+
+def save_focus_segmentation(in_focus_organoids):
+    """Reads a folder containing grayscale images, segments the organoids and saves the resulting masks in a new folder"""
+    # segment_in_focus_organoids() returns a dictionary where the organoid labels are stored under each well_id key
+    focus_classified_organoids = segment_in_focus_organoids(Path(in_focus_organoids))
+
+    # Define the directory path where you want to save the segmented organoid masks
+    # Split the in_focus_organoids path to obtain the folder that is one level up (head)
+    head, tail = os.path.split(in_focus_organoids)
+    output_directory = os.path.join(head, "in_out_focus_masks")
+
+    # Save the segmented organoid masks contained in segmented_organoids in the above defined output directory
+    save_object_mask(focus_classified_organoids, output_directory)

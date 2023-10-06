@@ -3,15 +3,11 @@ import os
 import concurrent.futures
 from pathlib import Path
 from utils import (
-    read_images,
-    find_focus,
-    find_highest_infocus,
-    store_imgs,
+    process_folder,
     plot_plate,
-    segment_organoids,
+    save_organoid_segmentation,
+    save_focus_segmentation,
     random_cmap,
-    save_object_mask,
-    segment_in_focus_organoids,
 )
 from tqdm import tqdm
 import pandas as pd
@@ -26,6 +22,7 @@ warnings.filterwarnings(
     message="invalid value encountered in long_scalars",
 )
 
+
 # ---------------- USER INPUT NEEDED BELOW ---------------- #
 
 # Define your data directory (folder containing the subfolders storing your plate images)
@@ -38,92 +35,17 @@ USERNAME = "Andrew"
 # Choose which plate views do you need (i.e. grayscale, organoid_object, in_focus)
 PLATE_VIEWS = ["grayscale", "organoid_object", "in_focus"]
 
-# ---------------- USER INPUT NEEDED ABOVE ---------------- #
+# ---------------- USER INPUT NEEDED ABOVE ---------------------------- #
+
+# ---------------- PARALLEL PROCESSING FUNCTIONS ---------------------- #
 
 
-# Function to process a single folder for multithreading
-def process_folder(folder):
-    """Reads a folder, scans all z-stacks per well and stores a copy of the in-focus stack"""
-    directory_path = PARENT_FOLDER.joinpath(folder)
-    print(directory_path)
-
-    # The following function will read all the images contained within the directory_path above
-    # and store them grouped by well_id.
-    images_per_well = read_images(directory_path)
-
-    # Compute the nr of organoids in focus per well
-    nr_infocus_organoids = find_focus(images_per_well)
-
-    # Store a .csv copy of the max_index_dict containing the percentages of organoids in focus
-    # Create a Pandas DataFrame
-    df = pd.DataFrame(nr_infocus_organoids)
-
-    # Specify the output directory path
-    directory = Path(f"./output/{USERNAME}")
-    output_directory = directory.joinpath(folder)
-
-    # Check if the output directory already exists and create it if it does not
-    try:
-        os.makedirs(output_directory)
-        print(f"Directory '{output_directory}' created successfully.")
-    except FileExistsError:
-        print(f"Directory '{output_directory}' already exists.")
-
-    # Save the DataFrame as a .csv file
-    df.to_csv(
-        f"./{str(output_directory)}/Percentage_in_focus_per_well_{str(folder)}.csv",
-        index=False,
-    )
-
-    # Finding the z-stack with the most organoids in-focus
-    max_index_dict = find_highest_infocus(nr_infocus_organoids)
-
-    # In case one of the wells has no detectable organoids in focus, this will substitute the focal plane
-    # with an average of all focal planes in the plate
-
-    # Calculate the average of all values in the dictionary
-    average_value = round(sum(max_index_dict.values()) / len(max_index_dict))
-
-    # Substitute the 0 values for the average focal plane
-    for well, in_focus_stack in max_index_dict.items():
-        if in_focus_stack == 0:
-            max_index_dict[well] = average_value
-
-    # Storing a copy of each z-stack with the most organoids in focus
-    store_imgs(
-        images_per_well,
-        max_index_dict,
-        output_dir=f"{output_directory}/in_focus_organoids",
-    )
+def process_folder_wrapper(folder):
+    """Wrapper function to pass additional arguments to process_folder"""
+    process_folder(folder, PARENT_FOLDER, USERNAME)
 
 
-def save_organoid_segmentation(in_focus_organoids):
-    """Reads a folder containing grayscale images, segments the organoids and saves the resulting masks in a new folder"""
-    # segment_organoids() returns a dictionary where the organoid labels are stored under each well_id key
-    segmented_organoids = segment_organoids(Path(in_focus_organoids))
-
-    # Define the directory path where you want to save the segmented organoid masks
-    # Split the in_focus_organoids path to obtain the folder that is one level up (head)
-    head, tail = os.path.split(in_focus_organoids)
-    output_directory = os.path.join(head, "segmented_organoids")
-
-    # Save the segmented organoid masks contained in segmented_organoids in the above defined output directory
-    save_object_mask(segmented_organoids, output_directory)
-
-
-def save_focus_segmentation(in_focus_organoids):
-    """Reads a folder containing grayscale images, segments the organoids and saves the resulting masks in a new folder"""
-    # segment_in_focus_organoids() returns a dictionary where the organoid labels are stored under each well_id key
-    focus_classified_organoids = segment_in_focus_organoids(Path(in_focus_organoids))
-
-    # Define the directory path where you want to save the segmented organoid masks
-    # Split the in_focus_organoids path to obtain the folder that is one level up (head)
-    head, tail = os.path.split(in_focus_organoids)
-    output_directory = os.path.join(head, "in_out_focus_masks")
-
-    # Save the segmented organoid masks contained in segmented_organoids in the above defined output directory
-    save_object_mask(focus_classified_organoids, output_directory)
-
+# ---------------- SCRIPT ---------------------- #
 
 if __name__ == "__main__":
     # Initialize an empty list to store subfolder names
@@ -135,11 +57,35 @@ if __name__ == "__main__":
             subfolder_list.append(subfolder.name)
 
     # Process folders in parallel and extract in-focus images
+    print("Extracting in-focus z-stacks")
     with concurrent.futures.ProcessPoolExecutor() as executor:
-        executor.map(process_folder, subfolder_list)
+        executor.map(process_folder_wrapper, subfolder_list)
+
+    # Generate directory lists
+    if len(PLATE_VIEWS) >= 1:
+        for folder in subfolder_list:
+            # Specify the output directory path
+            directory = Path(f"./output/{USERNAME}")
+            output_directory = directory.joinpath(folder)
+
+        if "organoid_object" or "in_focus" in PLATE_VIEWS:
+            # Create empty lists to hold all the directories
+            in_focus_org_dirs = []
+            org_masks_dirs = []
+            focus_masks_dirs = []
+
+            # Create all necessary subfolders within the output_directory
+            in_focus_org_directory = f"{output_directory}/in_focus_organoids"
+            organoid_mask_directory = f"{output_directory}/segmented_organoids"
+            focus_mask_directory = f"{output_directory}/in_out_focus_masks"
+            in_focus_org_dirs.append(in_focus_org_directory)
+            org_masks_dirs.append(organoid_mask_directory)
+            focus_masks_dirs.append(focus_mask_directory)
 
     # Plot grayscale images plate view
     if "grayscale" in PLATE_VIEWS:
+        print("Generating and storing grayscale images plate views")
+        
         for folder in subfolder_list:
             # Specify the output directory path
             directory = Path(f"./output/{USERNAME}")
@@ -231,6 +177,3 @@ if __name__ == "__main__":
                 colormap=custom_cmap,
                 show_fig=False,
             )
-
-# TODO: Move directory generation loops out of the "PLATE_VIEWS" conditions
-# TODO: Move functions to utils.py
