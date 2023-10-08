@@ -50,6 +50,8 @@ def main():
     plt.ylabel('Time (seconds)')
     plt.legend()
     plt.title('Script Execution Time Comparison')
+    # Save the result as a vector image to the default content folder
+    plt.savefig(f"./benchmark_results/benchmark.svg", format = 'svg', dpi=300, bbox_inches='tight')
     plt.show()
 
 if __name__ == "__main__":
