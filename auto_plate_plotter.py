@@ -16,6 +16,11 @@ from tqdm import tqdm
 import pandas as pd
 from matplotlib.colors import ListedColormap
 
+# Initialize GPU-acceleration if available
+import pyclesperanto_prototype as cle  # version 0.24.1
+device = cle.select_device("TX")
+print("Used GPU: ", device)
+
 import warnings
 # Filter out the specific warning when organoids are not detected (empty well)
 warnings.filterwarnings(
