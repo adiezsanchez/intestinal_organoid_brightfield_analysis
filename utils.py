@@ -13,10 +13,6 @@ from skimage import measure
 from skimage.color import rgb2gray
 from apoc import ObjectSegmenter, ObjectClassifier
 
-# Initialize GPU-acceleration if available
-device = cle.select_device("TX")
-print("Used GPU: ", device)
-
 
 def read_images(directory_path):
     """Reads all the images in the input path and organizes them according to the well_id"""
