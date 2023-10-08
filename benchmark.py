@@ -6,6 +6,7 @@ import shutil
 import os
 
 def run_script(script_name):
+    """Triggers the script to run and calculates the time it takes to complete the process"""
     start_time = time.time()
     subprocess.run(["python", script_name])
     end_time = time.time()
@@ -13,12 +14,14 @@ def run_script(script_name):
     return elapsed_time
 
 def clear_output_folder():
+    """Deletes the contents of the output folder before starting each benchmarking run"""
     output_folder = './output'
     if os.path.exists(output_folder):
         shutil.rmtree(output_folder)
     os.makedirs(output_folder)
 
 def main():
+    """Defines the nr of benchmarking cycles (num_runs) and plots the results (also saves them as .csv)"""
     num_runs = 5
     auto_plate_times = []
     parallel_plate_times = []
