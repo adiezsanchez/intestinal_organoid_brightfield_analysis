@@ -18,6 +18,6 @@ This is a work in progress so I will be gradually including functionalities (fea
 
 4. Once you have gone through the notebooks you can use parallel_plate_plotter.py to generate your plate views. I recommend pasting your imaging results within the data folder under your name for ease of use (i.e.<code>./data/John_Doe</code>). 
 
-As an example, to analyze the following images:
+5. As an example, to analyze the following images contained within the P1.2023-09-29-11-56-39 folder, one would define the PARENT_FOLDER global variable as such: <code>PARENT_FOLDER = Path("./data/Andrew/202309_Org_ApcFlox_Lsd1i_Expt1")</code>. All folders containing the images to be analyzed must live within that PARENT_FOLDER directory.
 
 ![filepath](./images/filepath.png)
