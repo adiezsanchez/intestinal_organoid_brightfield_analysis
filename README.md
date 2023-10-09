@@ -17,7 +17,7 @@ This is a work in progress so I will be gradually including functionalities (fea
 
 2. Then you will need to create a virtual environment using the following command:
 
-<code>mamba create -n devbio-napari devbio-napari python=3.9 pyqt -c conda-forge</code>
+   <code>mamba create -n devbio-napari devbio-napari python=3.9 pyqt -c conda-forge</code>
 
 3. I recommend going through the Jupyter notebooks (.ipynb) files in order to familiarize yourself with Napari (image viewer) and the script functionalities. Particularly [1_train_and_setup.ipynb](1_train_and_setup.ipynb) if the resulting plate views are out of focus.
 
@@ -44,3 +44,7 @@ I have benchmarked the analysis of 6 full p24 well plates, with 14 z-stacks per 
 <h3>AMD Ryzen 9 5900x + Nvidia RTX 3070 8GB VRAM</h3>
 
 ![5900X_RTX3070_benchmark](./benchmark_results/5900x_rtx3700_6plates.png)
+
+<h2>Help and contact</h2>
+
+Feel free to get in touch with me for help at: <alberto.d.sanchez@ntnu.no>
