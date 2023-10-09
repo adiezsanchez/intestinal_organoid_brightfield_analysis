@@ -5,7 +5,7 @@
 
 ![workflow](./images/workflow.png)
 
-This repository contains a number of tools to speed up the interpretation and analysis of images from intestinal organoids acquired using a brightfield microscope. In our case an EVOS M7000 multiwell scanner which outputs the following filenames: _P1_Plate_M_p00_z00_0_A01f00d0_.
+This repository contains a number of tools to speed up the interpretation and analysis of images from intestinal organoids acquired using a widefield microscope (brightfield illumination). In our case an EVOS M7000 multiwell scanner which outputs the following filenames: _P1_Plate_M_p00_z00_0_A01f00d0_.
 
 The scripts use the previously mentioned naming convention to extract the well_id from each image ("A01"), scan through all z-planes ("z00") and find the focal plane with the most organoids in focus. Then it generates a plate view of the entire multiwell plate at high resolution for data exploration. Filenames **must contain the well_id identifier** in order for the scripts to work and plot the plate views.
 
@@ -24,9 +24,16 @@ This is a work in progress so I will be gradually including functionalities (fea
 4. Once you have gone through the notebooks you can use **parallel_plate_plotter.py** to generate your plate views. I recommend pasting your folders containing your images within the data folder under your name for ease of use (i.e.<code>./data/John_Doe</code>).
 
 5. As an example, to analyze the following images contained within the P1.2023-09-29-11-56-39 folder, one would define the PARENT_FOLDER global variable in **parallel_plate_plotter.py** as such:
+
    <code>PARENT_FOLDER = Path("./data/Andrew/202309_Org_ApcFlox_Lsd1i_Expt1")</code>
-   All folders containing the images to be analyzed must live within that PARENT_FOLDER directory.  
+
+   All folders containing the images to be analyzed must live within that PARENT_FOLDER directory.
+
    ![filepath](./images/filepath.png)
+
+6. Inside **parallel_plate_plotter.py**, you would also want to define the <code>RESOLUTION</code> (in dpi) at which you want to obtain your plate views, your <code>USERNAME</code> to define your output folder and which <code>PLATE_VIEWS</code> you want to obtain. I.e. if you just want to see the grayscale plate views you define the global variable <code>PLATE_VIEWS = ["grayscale"]</code> as such.
+
+7. Once you have defined the directory containing your images, your username and your desired output plate views you can run the script.
 
 <h2>Benchmarking</h2>
 
