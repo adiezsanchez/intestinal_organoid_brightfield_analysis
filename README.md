@@ -41,9 +41,7 @@ This repository contains two versions of the same script **auto_plate_plotter.py
 
 I have benchmarked the analysis of 6 full p24 well plates, with 14 z-stacks per well (each individual z-stack being a ndarray of shape (1048, 1328, 3) and dtype('uint8')) in various systems. You can see the performance gains in different hardwares by using parallel processing below. Since I am using [PyClesperanto](https://github.com/clEsperanto/pyclesperanto_prototype) and [APOC](https://github.com/haesleinhuepf/napari-accelerated-pixel-and-object-classification) from [Robert Haase](https://github.com/haesleinhuepf) having an OpenCL GPU available should decrease processing times. I will be posting benchmarking results below (5 consecutive runs of each script using the **benchmark.py** tool):
 
-<h3>AMD Ryzen 9 5900x + Nvidia RTX 3070 8GB VRAM</h3>
-
-![5900X_RTX3070_benchmark](./benchmark_results/5900x_rtx3700_6plates.png)
+![benchmark_comparison](./benchmark_results/comparison.png)
 
 <h2>Help and contact</h2>
 
