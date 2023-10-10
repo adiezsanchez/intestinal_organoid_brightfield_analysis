@@ -11,13 +11,43 @@ The scripts use the previously mentioned naming convention to extract the well_i
 
 This is a work in progress so I will be gradually including functionalities (feature extraction (morphology, nr of organoids per well) and object classification using deep learning).
 
+<h2>TL;DR</h2>
+
+Hey, I just want to plot my plate views with no coding at all. Lucky you, I will run you through the steps.
+
+1. At the top of this page, click on the green **Code** button, then click on **Download ZIP**.
+
+2. Extract the folder, in this example under: <code>C:\Users\albertds\Python_scripts</code>.
+
+3. Inside intestinal_organoid_brightfield_analysis you will see a data folder, create a folder with your name inside said data folder.
+
+4. Paste your folders containing the images you acquired inside <code>data/your_name</code>.
+
+At this point, you will need to follow steps 1 and 2 from the **Instructions** below to create the necessary Python virtual environment.
+
+1. Afterwards, inside the Miniforge Prompt (terminal) where you just created your first virtual environment type and hit enter:
+   <code>mamba activate napari-devbio</code>
+
+2. Once your virtual environment is (active), using the <code>cd</code> command inside the terminal navigate to where you just downloaded (or cloned) this repository. In my case:
+   ![terminal1](./images/terminal_env_activation)
+
+3. Then type <code>python ppp_GUI.py</code> and hit enter. After a few seconds and empty GUI like you see below will appear:
+   ![pppGUI](./images/ppp_GUI.png)
+
+4. If you were to analyze the images inside folders P1.2023-09-29-11-56-39 and P1.2023-10-02-08-13-59 under the path below, you will need to fill the GUI as shown above.
+   ![tldr_path](./images/filepath_tldr.png)
+
+5. Input your desired Resolution for the plate views you will obtain (600 dpi offer almost native resolution) and Username for the folder that will contain the ouput plate views, images in focus and segmentations.
+
+6. Click on generate plate views.
+
 <h2>Instructions</h2>
 
 1. In order to run these Jupyter notebooks and .py scripts you will need to familiarize yourself with the use of Python virtual environments using Mamba. See instructions [here](https://biapol.github.io/blog/mara_lampert/getting_started_with_mambaforge_and_python/readme.html).
 
 2. Then you will need to create a virtual environment using the following command:
 
-   <code>mamba create -n devbio-napari devbio-napari python=3.9 pyqt -c conda-forge</code>
+   <code>mamba create -n napari-devbio devbio-napari python=3.9 pyqt -c conda-forge</code>
 
 3. I recommend going through the Jupyter notebooks (.ipynb) files in order to familiarize yourself with Napari (image viewer) and the script functionalities. Particularly [1_train_and_setup.ipynb](1_train_and_setup.ipynb) if the resulting plate views are out of focus.
 
