@@ -19,22 +19,24 @@ Hey, I just want to plot my plate views with no coding at all. Lucky you, I will
 
 2. Extract the folder, in this example under: <code>C:\Users\albertds\Python_scripts</code>.
 
-3. Inside intestinal_organoid_brightfield_analysis you will see a data folder, create a folder with your name inside said data folder.
+3. Inside <code>intestinal_organoid_brightfield_analysis</code> you will see a <code>data</code> folder, create a folder with <code>your_name</code> inside said data folder.
 
-4. Paste your folders containing the images you acquired inside <code>data/your_name</code>.
+4. Paste the plate folders containing the images you acquired inside <code>data/your_name</code>.
 
-At this point, you will need to follow steps 1 and 2 from the **Instructions** below to create the necessary Python virtual environment.
+At this point, you will need to follow steps 1 and 2 from the **Instructions** section below to create the necessary Python virtual environment.
 
 1. Afterwards, inside the Miniforge Prompt (terminal) where you just created your first virtual environment type and hit enter:
    <code>mamba activate napari-devbio</code>
 
 2. Once your virtual environment is (active), using the <code>cd</code> command inside the terminal navigate to where you just downloaded (or cloned) this repository. In my case:
-   ![terminal1](./images/terminal_env_activation)
 
-3. Then type <code>python ppp_GUI.py</code> and hit enter. After a few seconds and empty GUI like you see below will appear:
+   ![terminal1](./images/terminal_env_activation.png)
+
+3. Then, inside the terminal, type <code>python ppp_GUI.py</code> and hit enter. After a few seconds a GUI like you see below (but with empty fields) will appear:
+
    ![pppGUI](./images/ppp_GUI.png)
 
-4. If you were to analyze the images inside folders P1.2023-09-29-11-56-39 and P1.2023-10-02-08-13-59 under the path below, you will need to fill the GUI as shown above.
+4. If you were to analyze the images inside folders P1.2023-09-29-11-56-39 and P1.2023-10-02-08-13-59 under the path shown below, you will need to fill the GUI as shown above.
    ![tldr_path](./images/filepath_tldr.png)
 
 5. Input your desired Resolution for the plate views you will obtain (600 dpi offer almost native resolution) and Username for the folder that will contain the ouput plate views, images in focus and segmentations.
