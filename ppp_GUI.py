@@ -29,8 +29,12 @@ from tkinter import (
 # Initialize GPU-acceleration if available
 import pyclesperanto_prototype as cle  # version 0.24.1
 
-device = cle.select_device("TX")
-print("Used GPU: ", device)
+try:
+    device = cle.select_device("TX")
+    print("Used GPU: ", device)
+except:
+    print("No GPU acceleration available, script will run on the CPU")
+    pass
 
 # Filter out the specific warning
 import warnings
