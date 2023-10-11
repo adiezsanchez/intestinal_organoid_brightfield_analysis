@@ -23,29 +23,30 @@ def read_images(directory_path):
     images_per_well = {}
 
     # Iterate through the files in the directory
-    for file_path in directory_path.glob("*.TIF"):
-        # Get the filename without the extension
-        filename = file_path.stem
-        # Remove unwanted files (Plate_R files)
-        if "Plate_R" in filename:
-            pass
-        # Remove maximum projections
-        elif "_z" not in filename:
-            pass
+    for file_path in directory_path.glob("*"):
+        # Check if the path is a file and ends with ".TIF"
+        if file_path.is_file() and file_path.suffix.lower() == ".tif":
+            # Get the filename without the extension
+            filename = file_path.stem
+            # Remove unwanted files (Plate_R files)
+            if "Plate_R" in filename:
+                pass
+            # Remove maximum projections
+            elif "_z" not in filename:
+                pass
+            else:
+                # Extract the last part of the filename (e.g., A06f00d0)
+                last_part = filename.split("_")[-1]
 
-        else:
-            # Extract the last part of the filename (e.g., A06f00d0)
-            last_part = filename.split("_")[-1]
+                # Get the first three letters to create the group name (well_id)
+                well_id = last_part[:3]
 
-            # Get the first three letters to create the group name (well_id)
-            well_id = last_part[:3]
+                # Check if the well_id exists in the dictionary, if not, create a new list
+                if well_id not in images_per_well:
+                    images_per_well[well_id] = []
 
-            # Check if the well_id exists in the dictionary, if not, create a new list
-            if well_id not in images_per_well:
-                images_per_well[well_id] = []
-
-            # Append the file to the corresponding group
-            images_per_well[well_id].append(str(file_path))
+                # Append the file to the corresponding group
+                images_per_well[well_id].append(str(file_path))
 
     return images_per_well
 
@@ -166,7 +167,7 @@ def store_imgs(
 ):
     """Stores images in focus"""
     # Create a directory to store the tif files if it doesn't exist
-    os.makedirs(output_dir, exist_ok=True)
+    Path(output_dir).mkdir(parents=True, exist_ok=True)
 
     # Iterate through keys in max_index_dict
     for key, index in max_index_dict.items():
@@ -175,8 +176,8 @@ def store_imgs(
             if 0 <= index < len(file_paths):
                 file_path = file_paths[index]
 
-                # Extract the file name (without the path)
-                file_name = os.path.basename(file_path)
+                # Extract the file name (without the path), same as key
+                file_name = Path(file_path).name
 
                 # Construct the output file path
                 output_path = os.path.join(output_dir, f"{key}.tif")
