@@ -33,7 +33,10 @@ try:
     device = cle.select_device("TX")
     print("Used GPU: ", device)
 except:
-    print("No GPU acceleration available, script will run on the CPU")
+    print("No GPU acceleration available at the moment")
+    print(
+        "Please refer to Troubleshooting: Graphics cards drivers at https://github.com/clEsperanto/pyclesperanto_prototype"
+    )
 
 # Filter out the specific warning
 import warnings
