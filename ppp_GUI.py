@@ -34,7 +34,6 @@ try:
     print("Used GPU: ", device)
 except:
     print("No GPU acceleration available, script will run on the CPU")
-    pass
 
 # Filter out the specific warning
 import warnings
