@@ -15,8 +15,12 @@ from matplotlib.colors import ListedColormap
 
 # Initialize GPU-acceleration if available
 import pyclesperanto_prototype as cle  # version 0.24.1
-device = cle.select_device("TX")
-print("Used GPU: ", device)
+
+try:
+    device = cle.select_device("TX")
+    print("Used GPU: ", device)
+except:
+    print("No GPU acceleration available, script will run on the CPU")
 
 import warnings
 
@@ -90,7 +94,7 @@ if __name__ == "__main__":
     # Plot grayscale images plate view
     if "grayscale" in PLATE_VIEWS:
         print("Generating and storing grayscale images plate views")
-        
+
         for folder in subfolder_list:
             # Specify the output directory path
             directory = Path(f"./output/{USERNAME}")
