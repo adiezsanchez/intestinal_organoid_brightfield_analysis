@@ -28,12 +28,22 @@ def read_images(directory_path):
         if file_path.is_file() and file_path.suffix.lower() == ".tif":
             # Get the filename without the extension
             filename = file_path.stem
-            # Remove unwanted files (Plate_R files)
-            if "Plate_R" in filename:
-                pass
+
+            # Read files that have already been formated as well_id
+            if len(filename) == 3 and filename[0] in ('A', 'B', 'C', 'D') and filename[1:].isdigit():
+                well_id = filename
+                if well_id not in images_per_well:
+                    images_per_well[well_id] = []
+                images_per_well[well_id].append(str(file_path))
+                
             # Remove maximum projections
             elif "_z" not in filename:
                 pass
+            
+            # Remove unwanted files (Plate_R files)
+            elif "Plate_R" in filename:
+                pass
+            
             else:
                 # Extract the last part of the filename (e.g., A06f00d0)
                 last_part = filename.split("_")[-1]
@@ -47,7 +57,7 @@ def read_images(directory_path):
 
                 # Append the file to the corresponding group
                 images_per_well[well_id].append(str(file_path))
-
+                
     return images_per_well
 
 
