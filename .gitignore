@@ -1,4 +1,5 @@
 __pycache__/
+output
 output/Percentage_in_focus_per_well.csv
 output/in_focus_organoids
 output/segmented_organoids
