@@ -47,9 +47,9 @@ At this point, you will need to follow steps 1 and 2 from the **Instructions** s
 
 1. In order to run these Jupyter notebooks and .py scripts you will need to familiarize yourself with the use of Python virtual environments using Mamba. See instructions [here](https://biapol.github.io/blog/mara_lampert/getting_started_with_mambaforge_and_python/readme.html).
 
-2. Then you will need to create a virtual environment using the following command:
+2. Then you will need to create a virtual environment either using the following command or recreate the environment from the .yml file you can find in the envs folder:
 
-   <code>mamba create -n napari-devbio devbio-napari python=3.9 pyqt -c conda-forge</code>
+   <code>mamba create -n int_organoids python=3.9 devbio-napari cellpose pytorch torchvision plotly pyqt ultralytics -c conda-forge -c pytorch</code>
 
 3. I recommend going through the Jupyter notebooks (.ipynb) files in order to familiarize yourself with Napari (image viewer) and the script functionalities. Particularly [1_train_and_setup.ipynb](1_train_and_setup.ipynb) if the resulting plate views are out of focus.
 
