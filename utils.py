@@ -2,6 +2,7 @@ import os
 import shutil
 import pandas as pd
 import numpy as np
+import math
 import tifffile
 import pyclesperanto_prototype as cle  # version 0.24.1
 import napari_segment_blobs_and_things_with_membranes as nsbatwm  # version 0.3.6
@@ -9,9 +10,11 @@ import matplotlib.pyplot as plt
 from matplotlib.colors import ListedColormap
 from pathlib import Path
 from tqdm import tqdm
-from skimage import measure
+from skimage import measure, io
+from skimage.measure import regionprops
 from skimage.color import rgb2gray
 from apoc import ObjectSegmenter, ObjectClassifier
+from ultralytics import YOLO
 
 
 def read_images(directory_path):
@@ -50,6 +53,142 @@ def read_images(directory_path):
 
     return images_per_well
 
+def min_intensity_projection(image_paths):
+    """Takes a collection of image paths containing one z-stack per file and performs minimum intensity projection"""
+    # Load images from the specified paths
+    image_collection = io.ImageCollection(image_paths)
+    # Stack images into a single 3D numpy array
+    stack = io.concatenate_images(image_collection)
+    # Perform minimum intensity projection along the z-axis (axis=0)
+    min_proj = np.min(stack, axis=0)
+    
+    return min_proj
+
+def save_min_projection_imgs(images_per_well, output_dir="./output/MIN_projections"):
+    """Takes a images_per_well from read_images as input, performs minimum intensity projection and saves the resulting image on a per well basis"""
+    for well_id, files in images_per_well.items():
+        # Perform minimum intensity projection of the stack stored under well_id key
+        min_proj = min_intensity_projection(images_per_well[well_id])
+        
+        # Create a directory to store the tif files if it doesn't exist
+        Path(output_dir).mkdir(parents=True, exist_ok=True)
+        
+        # Construct the output file path
+        output_path = os.path.join(output_dir, f"{well_id}.tif")
+        
+        # Save the resulting minimum projection
+        tifffile.imwrite(output_path, min_proj)
+
+def predict_masks(input_folder, model_dir="./models/GPU_1px_cle_eroded_labels.pt", conf_threshold=0.6, output_dir="./output/predictions"):
+    """Takes a directory containing minimum intensity projections as input and outputs the predicted masks burnt-in on top of the input images"""
+    # Define the directory containing your files
+    directory_path = Path(input_folder)
+    
+    # Load the pre-trained model you want to apply
+    model = YOLO(model_dir)
+    
+    # Loop through all input images (minimum intensity projections)
+    for image_path in directory_path.glob("*.tif"):
+        
+        # Get the filename without the extension
+        filename = image_path.stem
+        
+        results = model.predict(image_path, conf=conf_threshold)  # Adjust confidence (conf) threshold
+
+        im_array = results[0].plot(conf=False, labels=False, boxes=True, line_width=2)
+        
+        # Create a directory to store the tif files if it doesn't exist
+        Path(output_dir).mkdir(parents=True, exist_ok=True)
+        
+        # Construct the output file path
+        output_path = os.path.join(output_dir, f"{filename}.tif")
+        
+        # Save the resulting minimum projection
+        tifffile.imwrite(output_path, im_array)
+        
+def extract_stats(input_folder, model_dir="./models/GPU_1px_cle_eroded_labels.pt", conf_threshold=0.6, output_dir="./output/predictions"):
+    """Takes a directory containing minimum intensity projections, performs inference and returns a df containing regionprops per object per class per well_id"""
+    # Define the directory containing your files
+    directory_path = Path(input_folder)
+    
+    # Load the pre-trained model you want to apply
+    model = YOLO(model_dir)
+    
+    # Initialize a list to store the properties for all images
+    all_props_list = []
+    
+    # Loop through all input images (minimum intensity projections)
+    for image_path in directory_path.glob("*.tif"):
+        
+        # Get the filename without the extension
+        filename = image_path.stem
+
+        # Perform inference on the image stored in image_path
+        results = model.predict(image_path, conf=conf_threshold)  # Adjust confidence (conf) threshold
+
+        # Access the first position in the resulting YOLO results list
+        result = results[0]
+        extracted_masks = result.masks.data
+
+        # Extract the boxes, which contain class IDs
+        detected_boxes = result.boxes.data
+
+        # Extract class IDs from the detected boxes
+        class_labels = detected_boxes[:, -1].int().tolist()
+
+        # Initialize a dictionary to hold masks by class
+        masks_by_class = {name: [] for name in result.names.values()}
+
+        # Iterate through the masks and class labels
+        for mask, class_id in zip(extracted_masks, class_labels):
+            class_name = result.names[class_id]  # Map class ID to class name
+            masks_by_class[class_name].append(mask.cpu().numpy())
+            
+        # for class_name, masks in masks_by_class.items():
+            # print(f"Class Name: {class_name}, Number of Masks: {len(masks)}")
+            
+        # Initialize a list to store the properties
+        props_list = []
+
+        # Iterate through all classes
+        for class_name, masks in masks_by_class.items():
+            # Iterate through the masks for this class
+            for mask in masks:
+                # Convert the mask to an integer type if it's not already
+                mask = mask.astype(int)
+
+                # Apply regionprops to the mask
+                props = regionprops(mask)
+
+                # Extract the properties you want (e.g., area, perimeter) and add them to the list
+                for prop in props:
+                    area = prop.area
+                    area_filled = prop.area_filled
+                    perimeter = prop.perimeter
+                    circularity = min(1, (4 * math.pi * prop.area) / prop.perimeter**2)
+                    eccentricity = prop.eccentricity
+                    label = prop.label
+                    solidity = prop.solidity
+                    # Add other properties as needed
+
+                    # Append the properties and class name to the list
+                    props_list.append({'well_id': filename,
+                                    'Class Name': class_name,
+                                    'Area': area,
+                                    'Area_filled': area_filled,
+                                    'Perimeter': perimeter,
+                                    'Circularity': circularity,
+                                    'Eccentricity': eccentricity,
+                                    'Solidity': solidity})
+                    
+        # Extend all_props_list with the properties from this image
+        all_props_list.extend(props_list)
+
+    # Convert the aggregated list of dictionaries to a DataFrame
+    all_props_df = pd.DataFrame(all_props_list)
+
+    # Now props_df contains the properties and class names for all regions
+    return all_props_df
 
 def find_focus(images_per_well):
     """Processes all the images and extract the number of organoids in focus from each image"""
