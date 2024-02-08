@@ -1,15 +1,15 @@
-<h1>Intestinal organoid brightfield analysis</h1>
+<h1>Intestinal organoid brightfield analysis (find_focus, deprecated)</h1>
 
 [![License](https://img.shields.io/pypi/l/napari-accelerated-pixel-and-object-classification.svg?color=green)](https://github.com/adiezsanchez/intestinal_organoid_brightfield_analysis/blob/main/LICENSE)
 [![Development Status](https://img.shields.io/pypi/status/napari-accelerated-pixel-and-object-classification.svg)](https://en.wikipedia.org/wiki/Software_release_life_cycle#Alpha)
 
 ![workflow](./images/workflow.png)
 
-This repository contains a number of tools to speed up the interpretation and analysis of images from intestinal organoids acquired using a widefield microscope (brightfield illumination). In our case an EVOS M7000 multiwell scanner which outputs the following filenames: _P1_Plate_M_p00_z00_0_A01f00d0_.
+This repository contains a number of tools to speed up the interpretation of images from intestinal organoids acquired using a widefield microscope (brightfield illumination). In our case an EVOS M7000 multiwell scanner which outputs the following filenames: _P1_Plate_M_p00_z00_0_A01f00d0_.
 
 The scripts use the previously mentioned naming convention to extract the well_id from each image ("A01"), scan through all z-planes ("z00") and find the focal plane with the most organoids in focus. Then it generates a plate view of the entire multiwell plate at high resolution for data exploration. Filenames **must contain the well_id identifier** in order for the scripts to work and plot the plate views.
 
-This is a work in progress so I will be gradually including functionalities (feature extraction (morphology, nr of organoids per well) and object classification using deep learning).
+For object segmentation and classification using deep learning (YOLOv8 from ultralytics) please visit the newest iteration of this project here: [here](https://empty-link.html).
 
 <h2>TL;DR</h2>
 
@@ -49,7 +49,7 @@ At this point, you will need to follow steps 1 and 2 from the **Instructions** s
 
 2. Then you will need to create a virtual environment either using the following command or recreate the environment from the .yml file you can find in the envs folder:
 
-   <code>mamba create -n int_organoids python=3.9 devbio-napari cellpose pytorch torchvision plotly pyqt ultralytics -c conda-forge -c pytorch</code>
+   <code>mamba create -n napari-devbio python=3.9 devbio-napari cellpose pytorch torchvision plotly pyqt ultralytics -c conda-forge -c pytorch</code>
 
 3. I recommend going through the Jupyter notebooks (.ipynb) files in order to familiarize yourself with Napari (image viewer) and the script functionalities. Particularly [1_train_and_setup.ipynb](1_train_and_setup.ipynb) if the resulting plate views are out of focus.
 
