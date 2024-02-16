@@ -9,7 +9,7 @@ This repository contains a number of tools to speed up the interpretation of ima
 
 The scripts use the previously mentioned naming convention to extract the well_id from each image ("A01"), scan through all z-planes ("z00") and find the focal plane with the most organoids in focus. Then it generates a plate view of the entire multiwell plate at high resolution for data exploration. Filenames **must contain the well_id identifier** in order for the scripts to work and plot the plate views.
 
-For object segmentation and classification using deep learning (YOLOv8 from ultralytics) please visit the newest iteration of this project here: [here](https://empty-link.html).
+For object segmentation and classification using deep learning (YOLOv8 from ultralytics) please visit the newest iteration of this project here: [here](https://github.com/adiezsanchez/intestinal_organoid_yolov8).
 
 <h2>TL;DR</h2>
 
